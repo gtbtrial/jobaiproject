@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 
-ROOT = Path.cwd() / "job_market_ai_outputs"
+ROOT = Path.cwd() 
 DATA = ROOT / "data" / "processed_jobs.csv"
 MODELS = ROOT / "models"
 ARTIFACTS = ROOT / "artifacts"
