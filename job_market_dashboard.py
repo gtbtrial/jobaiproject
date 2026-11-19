@@ -1,12 +1,12 @@
-
 from pathlib import Path
+import altair as alt
 import joblib
 import numpy as np
 import pandas as pd
 import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 
-ROOT = Path.cwd() 
+ROOT = Path.cwd()
 DATA = ROOT / "data" / "processed_jobs.csv"
 MODELS = ROOT / "models"
 ARTIFACTS = ROOT / "artifacts"
@@ -37,7 +37,30 @@ if page == "Market overview":
     salary = df[TARGET].dropna()
     if not salary.empty:
         st.subheader("Annualized advertised salary distribution (USD)")
-        st.bar_chart(salary.clip(upper=salary.quantile(0.99)).value_counts(bins=25).sort_index())
+        clipped = salary.clip(upper=salary.quantile(0.99))
+        counts, edges = np.histogram(clipped, bins=25)
+        hist_df = pd.DataFrame({
+            "Salary range": [
+                f"${edges[i]/1000:.0f}k–${edges[i+1]/1000:.0f}k"
+                for i in range(len(counts))
+            ],
+            "Job postings": counts,
+        })
+        chart = (
+            alt.Chart(hist_df)
+            .mark_bar()
+            .encode(
+                x=alt.X(
+                    "Salary range:N",
+                    sort=None,
+                    title="Annual salary (USD)",
+                    axis=alt.Axis(labelAngle=-45),
+                ),
+                y=alt.Y("Job postings:Q", title="Job postings"),
+                tooltip=["Salary range", "Job postings"],
+            )
+        )
+        st.altair_chart(chart, use_container_width=True)
     st.caption("Salary analytics include supported USD salary ranges only.")
 
 elif page == "Salary prediction":
